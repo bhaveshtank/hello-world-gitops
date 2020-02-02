@@ -1,0 +1,112 @@
+{
+  "expectedArtifacts": [
+    {
+      "defaultArtifact": {
+        "id": "24760cc1-39ec-4299-9701-31c5f3da82c1",
+        "reference": "configuration/hello-world.yaml/raw",
+        "type": "github/file"
+      },
+      "displayName": "hello-world/hello-world.yaml",
+      "id": "df56746d-f2b8-4e1d-b6df-07d38d9233be",
+      "matchArtifact": {
+        "id": "87a99668-f695-4f33-adab-3c1e2566e681",
+        "name": "hello-world/hello-world.yaml",
+        "type": "github/file"
+      },
+      "useDefaultArtifact": true,
+      "usePriorArtifact": false
+    },
+    {
+      "defaultArtifact": {
+        "id": "feacc468-1afd-4bbe-9374-6f539443af6a",
+        "name": "<REPO-NAME>/<APP-NAME:<TAG-NAME>",
+        "reference": "<REPO-NAME>/<APP-NAME:<TAG-NAME>",
+        "type": "docker/image",
+        "version": "master-v1"
+      },
+      "displayName": "<REPO-NAME>/<APP-NAME:<TAG-NAME>",
+      "id": "e363a56e-1b90-4217-a545-929e1203a7de",
+      "matchArtifact": {
+        "id": "731166fa-aee7-4dd9-819c-a6ad7e15ba2f",
+        "name": "<REPO-NAME>/<APP-NAME:<TAG-NAME>",
+        "type": "docker/image"
+      },
+      "useDefaultArtifact": true,
+      "usePriorArtifact": false
+    }
+  ],
+  "keepWaitingPipelines": false,
+  "lastModifiedBy": "",
+  "limitConcurrent": true,
+  "parameterConfig": [
+    {
+      "default": "default",
+      "name": "namespace"
+    }
+  ],
+  "stages": [
+    {
+      "account": "eks-stage-cluster",
+      "cloudProvider": "kubernetes",
+      "manifestArtifactAccount": "github",
+      "manifestArtifactId": "7af3575e-bfd5-4a2b-bf2b-d31bfabd96cb",
+      "moniker": {
+        "app": "hello-world"
+      },
+      "name": "Deploy Config",
+      "refId": "1",
+      "relationships": {
+        "loadBalancers": [],
+        "securityGroups": []
+      },
+      "requiredArtifactIds": [],
+      "requisiteStageRefIds": [],
+      "skipExpressionEvaluation": false,
+      "source": "artifact",
+      "type": "deployManifest"
+    },
+    {
+      "account": "eks-stage-cluster",
+      "cloudProvider": "kubernetes",
+      "manifestArtifactAccount": "github",
+      "manifestArtifactId": "df56746d-f2b8-4e1d-b6df-07d38d9233be",
+      "moniker": {
+        "app": "hello-world"
+      },
+      "name": "Deploy Image",
+      "refId": "2",
+      "relationships": {
+        "loadBalancers": [],
+        "securityGroups": []
+      },
+      "requisiteStageRefIds": [
+        "1"
+      ],
+      "skipExpressionEvaluation": false,
+      "source": "artifact",
+      "type": "deployManifest"
+    }
+  ],
+  "triggers": [
+    {
+      "enabled": true,
+      "job": "hello-world/job/master",
+      "master": "jenkins",
+      "propertyFile": "image.properties",
+      "type": "jenkins"
+    },
+    {
+      "branch": "master",
+      "enabled": true,
+      "expectedArtifactIds": [
+        "7af3575e-bfd5-4a2b-bf2b-d31bfabd96cb",
+        "df56746d-f2b8-4e1d-b6df-07d38d9233be"
+      ],
+      "project": "hello-world",
+      "slug": "hello-world",
+      "source": "github",
+      "type": "git"
+    }
+  ],
+  "updateTs": "1580204119000"
+}

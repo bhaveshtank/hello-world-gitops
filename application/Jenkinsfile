@@ -1,0 +1,66 @@
+pipeline {
+  agent {
+    kubernetes {
+      label 'python-builder'
+      defaultContainer 'jnlp'
+      yaml """
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    some-label: python-builder
+spec:
+  containers:
+  - name: python
+    image: python-alpine
+    command:
+    - cat
+    tty: true
+  - name: docker
+    image: docker:latest
+    command:
+    - cat
+    tty: true
+    volumeMounts:
+    - name: dockersock
+      mountPath: /var/run/docker.sock
+  volumes:
+  - name: dockersock
+    hostPath:
+      path: /var/run/docker.sock
+"""
+    }
+  }
+  stages {
+    stage('npm dependencies') {
+      steps {
+          
+            sh 'echo "Installing python dependencies"'
+        }
+      }
+    }
+    stage('Build for release branch') {
+      when {
+        expression { BRANCH_NAME ==~ /release.*|jenkins-.*|master/ }
+      }
+      steps {
+        container('docker') {
+          script {
+            docker.withRegistry('https://<REPO-NAME>' ) {
+              def myImage = docker.build("<APP-NAME>:${env.BRANCH_NAME}-v${env.BUILD_ID}", "--network=host -f Dockerfile .   ")
+              myImage.push()
+            }
+          }
+          sh "echo messageFormat=DOCKER > image.properties"
+          sh "echo image=<REPO-NAME/APP_NAME>:${env.BRANCH_NAME}-v${BUILD_ID} >> image.properties"
+        }
+      }
+      post {
+        always {
+            archiveArtifacts artifacts: 'image.properties', onlyIfSuccessful: true
+        }
+      }
+    }
+  }
+}
+
